@@ -11,4 +11,5 @@ This is the source code for kies, which is my personal website.
 |dto| The type to represent a kind of json structure|
 |handler| The bussiness logistic source code|
 |lib| The third party libraries which are not provided by conan|
+|script| The shell script for build the source code and install|
 |utils| The utility source code|
