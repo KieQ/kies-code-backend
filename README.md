@@ -1,6 +1,7 @@
 # kies-source-backend
 
 ![CMake](https://github.com/KieQ/kies-source-backend/workflows/CMake/badge.svg)
+[![Open in Visual Studio Code](https://open.vscode.dev/badges/open-in-vscode.svg)](https://open.vscode.dev/kieQ/kies-source-backend)
 
 This is the source code for kies, which is my personal website.
 
