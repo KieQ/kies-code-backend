@@ -30,11 +30,7 @@ void bind_api(http_server &server)
 
 int main()
 {
-    const char *port = std::getenv("PORT");
-    if (port == nullptr)
-    {
-        port = "8080";
-    }
+    auto port = "8080";
 
     SPDLOG_INFO("PORT={}", port);
 
