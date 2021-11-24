@@ -1,3 +1,5 @@
+git submodule update --init --recursive
+
 if [ ! -d "build/" ]; then
   mkdir build
 fi
