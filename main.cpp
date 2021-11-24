@@ -30,7 +30,6 @@ int main()
     http_server server(max_thread_num);
     server.listen("0.0.0.0", port);
 
-    bind_page(server);
     bind_api(server);
     SPDLOG_INFO("Server starts with {} threads", max_thread_num);
     server.run();    
