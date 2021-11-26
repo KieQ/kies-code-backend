@@ -10,8 +10,10 @@ conan install .. --build=missing
 
 cmake -DCMAKE_BUILD_TYPE=Release -DSKIP_TEST=ON ..
 
-echo 'compiling starts with' ${nproc} 'cpus'
+num_cpus=`grep 'physical id' /proc/cpuinfo | sort -u | wc -l`
 
-make -j${nproc}
+echo 'compiling starts with' ${num_cpus} 'cpus'
+
+make -j ${num_cpus}
 
 make install
