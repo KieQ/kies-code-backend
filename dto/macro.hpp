@@ -5,11 +5,11 @@
 
 #define FROM_JSON_INT_OPT(j, u, name) u.name = j.contains(#name) && j[#name].is_number_integer()? std::optional<int>(j.at(#name).get<int>()):std::nullopt
 
-#define FROM_JSON_BOOL_OPT(j, u, name) u.name = j.contains(#name) && j[#name].is_boolean()? std::optional<int>(j.at(#name).get<bool>()):std::nullopt
+#define FROM_JSON_BOOL_OPT(j, u, name) u.name = j.contains(#name) && j[#name].is_boolean()? std::optional<bool>(j.at(#name).get<bool>()):std::nullopt
 
-#define FROM_JSON_FLOAT_OPT(j, u, name) u.name = j.contains(#name) && j[#name].is_number_float()? std::optional<int>(j.at(#name).get<double>()):std::nullopt
+#define FROM_JSON_FLOAT_OPT(j, u, name) u.name = j.contains(#name) && j[#name].is_number_float()? std::optional<double>(j.at(#name).get<double>()):std::nullopt
 
-#define FROM_JSON_NUM_OPT(j, u, name) u.name = j.contains(#name) && j[#name].is_number()? std::optional<int>(j.at(#name).get<long long>()):std::nullopt
+#define FROM_JSON_NUM_OPT(j, u, name) u.name = j.contains(#name) && j[#name].is_number()? std::optional<long long>(j.at(#name).get<long long>()):std::nullopt
 
 #define FROM_JSON_STR(j, u, name, dv) u.name = j.contains(#name) && j[#name].is_string()? j.at(#name).get<std::string>():dv
 
