@@ -16,7 +16,7 @@
 
 namespace utils
 {
-    std::string resp(constant::StatusCode status_code = constant::StatusCode::Success, std::string_view status_message = "", nlohmann::json data = nlohmann::json());
+    std::string wrap(constant::StatusCode status_code = constant::StatusCode::Success, std::string_view status_message = "", nlohmann::json data = nlohmann::json());
 
     bool all_string(const nlohmann::json &data, std::initializer_list<std::string> names);
 

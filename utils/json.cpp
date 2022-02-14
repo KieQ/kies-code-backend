@@ -3,7 +3,7 @@
 
 namespace utils
 {
-    std::string resp(constant::StatusCode status_code, std::string_view status_message, nlohmann::json data)
+    std::string wrap(constant::StatusCode status_code, std::string_view status_message, nlohmann::json data)
     {
         nlohmann::json j;
         j["status_code"] = status_code;

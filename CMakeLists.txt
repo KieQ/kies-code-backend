@@ -28,12 +28,13 @@ add_subdirectory(lib)
 add_all_source(db)
 add_all_source(handler)
 add_all_source(utils)
+add_all_source(service)
 
 
 include(${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
 conan_basic_setup()
 
-add_executable(kies main.cpp ${db} ${handler} ${utils})
+add_executable(kies main.cpp ${db} ${handler} ${utils} ${service})
 target_link_libraries(kies PRIVATE lib ${CONAN_LIBS})
 
 install(TARGETS kies DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/..)

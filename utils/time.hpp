@@ -5,6 +5,7 @@
 namespace utils
 {
     int now();
+    int now_ms();
 } // namespace utils
 
 

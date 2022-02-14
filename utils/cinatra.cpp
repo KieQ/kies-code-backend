@@ -15,4 +15,9 @@ namespace utils
         return session;
     }
 
+    void on_json(std::string_view log_id, cinatra::response& res, std::string_view s){
+        res.add_header("X-LOG-ID", std::string(log_id));
+        res.set_status_and_content(cinatra::status_type::ok, std::string(s), cinatra::req_content_type::json);
+    }
+
 } // namespace utils

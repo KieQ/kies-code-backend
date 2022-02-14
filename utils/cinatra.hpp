@@ -39,6 +39,7 @@ namespace utils
 
     std::shared_ptr<cinatra::session> check_and_refresh_session(cinatra::request& req ,bool need_refresh = true);
 
+    void on_json(std::string_view log_id, cinatra::response& res, std::string_view s);
 } // namespace utils
 
 #endif

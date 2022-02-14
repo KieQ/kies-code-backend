@@ -1,0 +1,206 @@
+#include "download.h"
+
+#include <libtorrent/add_torrent_params.hpp>
+#include <libtorrent/magnet_uri.hpp>
+#include <libtorrent/hex.hpp>
+#include <spdlog/spdlog.h>
+#include <algorithm>
+#include <filesystem>
+
+#include "../db/t_video.hpp"
+#include "../utils/time.hpp"
+
+using libtorrent::aux::to_hex;
+
+namespace service
+{
+    Downloader Downloader::d;
+
+    Downloader &Downloader::get()
+    {
+        return d;
+    }
+
+    bool Downloader::init()
+    {
+        return false;
+    }
+
+    std::string_view Downloader::get_save_position()
+    {
+        return save_position;
+    }
+
+    bool Downloader::add_torrent(std::string_view log_id, std::string_view profile_link, const std::string &torrent_file)
+    {
+        lt::add_torrent_params apt;
+        apt.save_path = save_position;
+        apt.ti = std::make_shared<lt::torrent_info>(torrent_file);
+        auto hash = to_hex(apt.ti->info_hash().to_string());
+        if (downloading.find(hash) != downloading.end())
+        {
+            SPDLOG_INFO("log_id={}, torrrent file {} has been added to downloading", log_id, hash);
+            return true;
+        }
+
+        auto h = session.add_torrent(apt);
+        if (auto [_, exist] = db::t_video::fetch_first(log_id, {{"video_hash", hash}}); exist)
+        {
+            auto result = db::t_video::update(log_id, {{"video_hash", hash}}, {{"added_time", h.status().added_time}, {"profile_link", profile_link}, {"state", 0}});
+            if (result.affected_rows() == 0)
+            {
+                SPDLOG_WARN("log_id={}, failed to update database", log_id);
+                return false;
+            }
+        }
+        else
+        {
+            auto video_link = lt::make_magnet_uri(lt::torrent_info{torrent_file});
+            auto result = db::t_video::insert(log_id, {{"video_hash", hash},
+                                                       {"video_name", h.status().name},
+                                                       {"added_time", h.status().added_time},
+                                                       {"video_link", video_link},
+                                                       {"profile_link", profile_link}});
+
+            if (result.affected_rows() == 0)
+            {
+                SPDLOG_WARN("log_id={}, failed to insert database", log_id);
+                return false;
+            }
+        }
+
+        downloading.insert({hash, LastMeta{.last_time = utils::now_ms(), .last_size = h.status().total_payload_download, .handle = h}});
+        return true;
+    }
+
+    bool Downloader::add_magnet(std::string_view log_id, std::string_view profile_link, std::string_view video_link)
+    {
+        lt::add_torrent_params apt = lt::parse_magnet_uri(lt::string_view{video_link.data(), video_link.length()});
+        auto hash = to_hex(apt.info_hash.to_string());
+        if (downloading.find(hash) != downloading.end())
+        {
+            SPDLOG_INFO("log_id={}, torrrent file {} has been added to downloading", log_id, hash);
+            return true;
+        }
+        apt.save_path = save_position;
+
+        auto h = session.add_torrent(apt);
+
+        if (auto [_, exist] = db::t_video::fetch_first(log_id, {{"video_hash", hash}}); exist)
+        {
+            auto result = db::t_video::update(log_id, {{"video_hash", hash}}, {{"added_time", h.status().added_time}, {"profile_link", profile_link}, {"state", 0}});
+            if (result.affected_rows() == 0)
+            {
+                SPDLOG_WARN("log_id={}, failed to update database", log_id);
+                return false;
+            }
+        }
+        else
+        {
+            auto result = db::t_video::insert(log_id, {{"video_hash", hash},
+                                                       {"video_name", h.status().name},
+                                                       {"added_time", h.status().added_time},
+                                                       {"video_link", video_link},
+                                                       {"profile_link", profile_link}});
+            if (result.affected_rows() == 0)
+            {
+                return false;
+            }
+        }
+
+        downloading.insert({hash, LastMeta{.last_time = utils::now_ms(), .last_size = h.status().total_payload_download, .handle = h}});
+        return true;
+    }
+
+    std::tuple<Downloader::DownloadProgress, bool> Downloader::get_and_update(std::string_view log_id, const std::string &key)
+    {
+        if (downloading.find(key) == downloading.end())
+        {
+            if (auto [video_info, exist] = db::t_video::fetch_first(log_id, {{"video_hash", key}}); exist)
+            {
+                DownloadProgress progress{
+                    .state = 5,
+                    .speed = 0,
+                    .paused = true,
+                    .file_size = video_info.video_size,
+                    .downloaded_size = video_info.state == 1 ? video_info.video_size : 0,
+                    .progress = video_info.state == 1 ? 1.0f : 0.0f,
+                    .file_name = video_info.video_name};
+                return {progress, true};
+            }
+            else
+            {
+                SPDLOG_INFO("log_id={}, video {} does not exist");
+                return {{}, false};
+            }
+        }
+
+        if (downloading[key].handle.status().state == 5) // is seeding
+        {
+            auto result = db::t_video::update(log_id, {{"video_hash", key}}, {{"state", 1}, {"completed_time", downloading[key].handle.status().completed_time}, {"video_size", downloading[key].handle.status().total_wanted}});
+            if (result.affected_rows() == 0)
+            {
+                SPDLOG_INFO("log_id={}, failed to update {}", log_id, key);
+                return {{}, false};
+            }
+            DownloadProgress progress{
+                .state = 5,
+                .speed = 0,
+                .paused = true,
+                .file_size = downloading[key].handle.status().total_wanted,
+                .downloaded_size = downloading[key].handle.status().total_wanted,
+                .progress = 1.0,
+                .file_name = downloading[key].handle.status().name};
+            downloading.erase(key);
+            return {progress, true};
+        }
+        else
+        {
+            auto time_diff = std::max(utils::now_ms() - downloading[key].last_time, 1L);
+            auto size_diff = std::max(downloading[key].handle.status().total_payload_download - downloading[key].last_size, 0L);
+            DownloadProgress progress{
+                .state = downloading[key].handle.status().state,
+                .speed = size_diff * 1000 / time_diff,
+                .paused = false,
+                .file_size = downloading[key].handle.status().total_wanted,
+                .downloaded_size = downloading[key].handle.status().total_wanted_done,
+                .progress = downloading[key].handle.status().progress,
+                .file_name = downloading[key].handle.status().name};
+            return {progress, true};
+        }
+    }
+
+    bool Downloader::set_pause(std::string_view log_id, const std::string &key, bool pause)
+    {
+        if (downloading.find(key) != downloading.end())
+        {
+            if (pause)
+            {
+                downloading[key].handle.pause();
+            }
+            else
+            {
+                downloading[key].handle.resume();
+            }
+            return true;
+        }
+        return false;
+    }
+
+    void Downloader::remove(std::string_view log_id, const std::string &key)
+    {
+        downloading.erase(key);
+
+        auto [video, exist] = db::t_video::fetch_first(log_id, {{"video_hash", key}});
+        if (exist)
+        {
+            auto result = db::t_video::remove(log_id, {{"video_hash", key}});
+            if (result.affected_rows() == 0)
+            {
+                SPDLOG_INFO("log_id={}, failed to delete video {}", log_id, key);
+            }
+        }
+
+        std::filesystem::remove(save_position + "/" + video.video_name);
+    }
+} // namespace service

@@ -5,6 +5,8 @@ nlohmann_json/3.10.3
 libpqxx/7.5.2
 libpq/13.3
 gtest/cci.20210126
+libtorrent/2.0.1
+openssl/1.1.1m
 
 [generators]
 cmake
