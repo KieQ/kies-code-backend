@@ -10,8 +10,6 @@
 #include "../db/t_video.hpp"
 #include "../utils/time.hpp"
 
-#include <iostream>
-
 using libtorrent::aux::to_hex;
 
 namespace service

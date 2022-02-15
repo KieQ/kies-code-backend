@@ -10,6 +10,6 @@ conan install .. --build=missing
 
 cmake -DCMAKE_BUILD_TYPE=Release -DSKIP_TEST=ON ..
 
-make
+make -j4
 
 make install
