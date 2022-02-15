@@ -162,8 +162,8 @@ namespace service
         {
             auto now = utils::now_ms();
             auto size = downloading[key].handle.status().total_payload_download;
-            auto time_diff = std::max(now - downloading[key].last_time, 1L);
-            auto size_diff = std::max(size - downloading[key].last_size, 0L);
+            auto time_diff = std::max(now - downloading[key].last_time, static_cast<std::int64_t>(1));
+            auto size_diff = std::max(size - downloading[key].last_size, static_cast<std::int64_t>(0));
 
             downloading[key].last_size = size;
             downloading[key].last_time = now;
