@@ -19,7 +19,7 @@ namespace handler
         auto videos = db::t_video::fetch(log_id, {});
         std::vector<dto::VideoListResponse> all_videos;
         for(auto& video : videos){
-            bool can_display = std::filesystem::exists(std::string{service::Downloader::get().get_save_position()} + "/" + video.video_name);
+            bool can_display = std::filesystem::exists(std::string{service::Downloader::get().get_save_position()} + "/" + video.video_name) && video.state==1;
             all_videos.push_back(dto::VideoListResponse{.name=video.video_name, .profile=video.profile_link, .file_size=video.video_size, .state=video.state, .can_display=can_display, .hash_key=video.video_hash});
         }
         utils::on_json(log_id, res, utils::wrap(StatusCode::Success, "", all_videos));
@@ -82,27 +82,6 @@ namespace handler
         return;
     }
 
-    void video_pause_and_resume(cinatra::request &req, cinatra::response &res)
-    {
-        auto [param, log_id, success] = utils::parse_request<dto::VideoPauseAndResumeRequest>(req);
-        if (!success)
-        {
-            SPDLOG_ERROR("log_id={}, failed to parse the parameters", log_id);
-            utils::on_json(log_id, res, utils::wrap(StatusCode::FailedToParseRequest, "failed to parse the parameters"));
-            return;
-        }
-        if (service::Downloader::get().set_pause(log_id, param.key, param.pause))
-        {
-            utils::on_json(log_id, res, utils::wrap());
-            return;
-        }
-        else
-        {
-            SPDLOG_WARN("log_id={}, failed to pause {}", log_id, param.key);
-            utils::on_json(log_id, res, utils::wrap(StatusCode::OperationFailed, "failed to pause"));
-            return;
-        }
-    }
     void video_remove(cinatra::request &req, cinatra::response &res)
     {
         auto [param, log_id, success] = utils::parse_request<dto::VideoRemoveRequest>(req);

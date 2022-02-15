@@ -22,7 +22,6 @@ void bind_api(http_server &server)
     //video management
     server.set_http_handler<POST>("/video/add", handler::video_add);
     server.set_http_handler<GET>("/video/progress", handler::video_progress);
-    server.set_http_handler<POST>("/video/pause_and_resume", handler::video_pause_and_resume);
     server.set_http_handler<POST>("/video/remove", handler::video_remove);
     server.set_http_handler<GET>("/video/list", handler::video_list);
 }   

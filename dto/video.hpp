@@ -13,14 +13,7 @@ namespace dto
 
         NLOHMANN_DEFINE_TYPE_INTRUSIVE(VideoDownloadRequest, magnet_link, profile_link)
     };
-
-    struct VideoPauseAndResumeRequest {
-        bool pause;
-        std::string key;
-
-        NLOHMANN_DEFINE_TYPE_INTRUSIVE(VideoPauseAndResumeRequest, pause, key)
-    };
-
+    
     struct VideoRemoveRequest {
         std::string key;
 

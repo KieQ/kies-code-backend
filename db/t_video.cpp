@@ -18,6 +18,7 @@ namespace db
             .video_hash = res["video_hash"].as<std::string>(),
             .video_name = res["video_name"].as<std::string>(),
             .video_size = res["video_size"].as<std::int64_t>(),
+            .state = res["state"].as<std::int64_t>(),
             .added_time = res["added_time"].as<std::int64_t>(),
             .completed_time = res["completed_time"].as<std::int64_t>(),
             .video_link = res["video_link"].as<std::string>(),

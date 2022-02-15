@@ -38,7 +38,7 @@ CREATE TABLE t_video (
         id serial PRIMARY KEY,
         video_hash VARCHAR(150) UNIQUE, 
         video_name VARCHAR(400) NOT NULL,
-        video_size INT NOT NULL DEFAULT 0,
+        video_size BIGINT NOT NULL DEFAULT 0,
         state INT NOT NULL DEFAULT 0, -- state of this record. 0: unfinished, 1: finished
         added_time INT NOT NULL DEFAULT 0,
         completed_time INT NOT NULL DEFAULT 0,

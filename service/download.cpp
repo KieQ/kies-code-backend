@@ -10,6 +10,8 @@
 #include "../db/t_video.hpp"
 #include "../utils/time.hpp"
 
+#include <iostream>
+
 using libtorrent::aux::to_hex;
 
 namespace service
@@ -82,6 +84,9 @@ namespace service
             SPDLOG_INFO("log_id={}, torrrent file {} has been added to downloading", log_id, hash);
             return true;
         }
+
+        std::error_code ec;
+
         apt.save_path = save_position;
 
         auto h = session.add_torrent(apt);
@@ -130,7 +135,7 @@ namespace service
             }
             else
             {
-                SPDLOG_INFO("log_id={}, video {} does not exist");
+                SPDLOG_INFO("log_id={}, video {} does not exist", log_id, key);
                 return {{}, false};
             }
         }
@@ -151,13 +156,19 @@ namespace service
                 .downloaded_size = downloading[key].handle.status().total_wanted,
                 .progress = 1.0,
                 .file_name = downloading[key].handle.status().name};
+            // session.remove_torrent(downloading[key].handle);
             downloading.erase(key);
             return {progress, true};
         }
         else
         {
-            auto time_diff = std::max(utils::now_ms() - downloading[key].last_time, 1L);
-            auto size_diff = std::max(downloading[key].handle.status().total_payload_download - downloading[key].last_size, 0L);
+            auto now = utils::now_ms();
+            auto size = downloading[key].handle.status().total_payload_download;
+            auto time_diff = std::max(now - downloading[key].last_time, 1L);
+            auto size_diff = std::max(size - downloading[key].last_size, 0L);
+
+            downloading[key].last_size = size;
+            downloading[key].last_time = now;
             DownloadProgress progress{
                 .state = downloading[key].handle.status().state,
                 .speed = size_diff * 1000 / time_diff,
@@ -170,26 +181,13 @@ namespace service
         }
     }
 
-    bool Downloader::set_pause(std::string_view log_id, const std::string &key, bool pause)
-    {
-        if (downloading.find(key) != downloading.end())
-        {
-            if (pause)
-            {
-                downloading[key].handle.pause();
-            }
-            else
-            {
-                downloading[key].handle.resume();
-            }
-            return true;
-        }
-        return false;
-    }
-
     void Downloader::remove(std::string_view log_id, const std::string &key)
     {
-        downloading.erase(key);
+        if(downloading.find(key) != downloading.end()){
+            auto delete_files = lt::session_handle::delete_files; //this is needed because libtorrent is compiled with C++14 or C++11 by conan and this project is in C++17. This might be a feature or bug of GCC which is related to unique symbol, so the linker will complain multi definition of delete_files. So I use this trick to walk around this bug. The bug might be fixed later even GCC 11 has this one as well, according to the internet, on which someone found this as well.
+            session.remove_torrent(downloading[key].handle, delete_files);
+            downloading.erase(key);
+        }
 
         auto [video, exist] = db::t_video::fetch_first(log_id, {{"video_hash", key}});
         if (exist)
@@ -199,8 +197,7 @@ namespace service
             {
                 SPDLOG_INFO("log_id={}, failed to delete video {}", log_id, key);
             }
+            std::filesystem::remove(save_position+"/"+video.video_name);
         }
-
-        std::filesystem::remove(save_position + "/" + video.video_name);
     }
 } // namespace service
