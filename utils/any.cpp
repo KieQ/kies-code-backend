@@ -46,20 +46,22 @@ namespace utils
                                           { return std::to_string(x); }),
             to_any_visitor<std::uint8_t>([](std::uint8_t x)
                                          { return std::to_string(x); }),
+            to_any_visitor<long>([](long x)
+                                 { return std::to_string(x); }),
+            to_any_visitor<long long>([](long long x)
+                                      { return std::to_string(x); }),
+            to_any_visitor<unsigned long>([](long x)
+                                 { return std::to_string(x); }),
+            to_any_visitor<unsigned long long>([](long long x)
+                                      { return std::to_string(x); }),
             to_any_visitor<bool>([](bool x)
                                  { return x ? "true" : "false"; }),
             to_any_visitor<std::string>([](std::string x)
-                                        {
-                                            return x;
-                                        }),
+                                        { return x; }),
             to_any_visitor<char const *>([](char const *x)
-                                         {
-                                            return std::string(x);
-                                         }),
+                                         { return std::string(x); }),
             to_any_visitor<std::string_view>([](std::string_view x)
-                                             {
-                                                 return std::string(x);
-                                             }),
+                                             { return std::string(x); }),
         };
 
     std::string any_to_string(const std::any &any)
