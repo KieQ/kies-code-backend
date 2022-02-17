@@ -155,7 +155,7 @@ namespace service
                 .progress = 1.0,
                 .file_name = downloading[key].handle.status().name};
             // session.remove_torrent(downloading[key].handle);
-            downloading.erase(key);
+            // downloading.erase(key);
             return {progress, true};
         }
         else
