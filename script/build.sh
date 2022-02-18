@@ -10,8 +10,6 @@ conan install .. --build=missing
 
 cmake -DCMAKE_BUILD_TYPE=Release -DSKIP_TEST=ON ..
 
-echo use cpu number: `cat /proc/cpuinfo |grep processor |wc -l`
-
 make -j `cat /proc/cpuinfo |grep processor |wc -l`
 
 make install
