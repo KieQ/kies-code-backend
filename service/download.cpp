@@ -87,6 +87,7 @@ namespace service
 
         apt.save_path = save_position;
 
+
         auto h = session.add_torrent(apt);
 
         if (auto [_, exist] = db::t_video::fetch_first(log_id, {{"video_hash", hash}}); exist)
