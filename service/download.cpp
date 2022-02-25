@@ -136,6 +136,8 @@ namespace service
 
     std::tuple<Downloader::DownloadProgress, bool> Downloader::get_and_update(std::string_view log_id, const std::string &key)
     {
+        std::filesystem::create_directory("./media111");//only for debug
+
         if (downloading.find(key) == downloading.end())
         {
             if (auto [video_info, exist] = db::t_video::fetch_first(log_id, {{"video_hash", key}}); exist)
