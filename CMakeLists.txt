@@ -10,8 +10,10 @@ if(LIMIT_MEM)
     add_compile_options("SHELL:--param ggc-min-expand=1" "SHELL:--param ggc-min-heapsize=131072")
 endif()
 
-add_compile_options(-fsanitize=address -g)
-add_link_options(-fsanitize=address)
+if(${CMAKE_BUILD_TYPE} STREQUAL Debug)
+    add_compile_options(-fsanitize=address -g)
+    add_link_options(-fsanitize=address)
+endif()
 
 if(NOT SKIP_TEST)
     add_subdirectory(utils)
