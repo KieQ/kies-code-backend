@@ -7,11 +7,17 @@
 
 namespace dto
 {
-    struct VideoDownloadRequest{
+    struct VideoDownloadWithMagnetRequest{
         std::string magnet_link;
         std::string profile_link;
 
-        NLOHMANN_DEFINE_TYPE_INTRUSIVE(VideoDownloadRequest, magnet_link, profile_link)
+        NLOHMANN_DEFINE_TYPE_INTRUSIVE(VideoDownloadWithMagnetRequest, magnet_link, profile_link)
+    };
+
+    struct VideoDownloadWithHashRequest {
+        std::string hash;
+
+        NLOHMANN_DEFINE_TYPE_INTRUSIVE(VideoDownloadWithHashRequest, hash);
     };
     
     struct VideoRemoveRequest {

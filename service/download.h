@@ -52,6 +52,7 @@ namespace service
 
         bool add_torrent(std::string_view log_id, std::string_view profile_link, const std::string &torrent_file);
         bool add_magnet(std::string_view log_id, std::string_view profile_link, std::string_view video_link);
+        bool add_hash(std::string_view log_id, std::string_view hash);
         std::tuple<DownloadProgress, bool> get_and_update(std::string_view log_id, const std::string &key);
         void remove(std::string_view log_id, const std::string &key);
     };

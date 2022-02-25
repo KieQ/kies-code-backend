@@ -13,14 +13,16 @@ using namespace constant;
 namespace handler
 {
 
-    void video_list(cinatra::request& req, cinatra::response& res){
+    void video_list(cinatra::request &req, cinatra::response &res)
+    {
         auto log_id = utils::req_id(req);
-
+        res.add_header("Access-Control-Allow-Origin", "*");
         auto videos = db::t_video::fetch(log_id, {});
         std::vector<dto::VideoListResponse> all_videos;
-        for(auto& video : videos){
-            bool can_display = std::filesystem::exists(std::string{service::Downloader::get().get_save_position()} + "/" + video.video_name) && video.state==1;
-            all_videos.push_back(dto::VideoListResponse{.name=video.video_name, .profile=video.profile_link, .file_size=video.video_size, .state=video.state, .can_display=can_display, .hash_key=video.video_hash});
+        for (auto &video : videos)
+        {
+            bool can_display = std::filesystem::exists(std::string{service::Downloader::get().get_save_position()} + "/" + video.video_name) && video.state == 1;
+            all_videos.push_back(dto::VideoListResponse{.name = video.video_name, .profile = video.profile_link, .file_size = video.video_size, .state = video.state, .can_display = can_display, .hash_key = video.video_hash});
         }
         utils::on_json(log_id, res, utils::wrap(StatusCode::Success, "", all_videos));
         return;
@@ -28,10 +30,25 @@ namespace handler
 
     void video_add(cinatra::request &req, cinatra::response &res)
     {
+        res.add_header("Access-Control-Allow-Origin", "*");
+
         auto type = req.get_query_value("type");
         auto log_id = utils::req_id(req);
 
-        if (type == "torrent")
+        if (type == "hash")
+        {
+            auto [param, _, success] = utils::parse_request<dto::VideoDownloadWithHashRequest>(req);
+            if (!success)
+            {
+                SPDLOG_ERROR("log_id={}, failed to parse the parameters", log_id);
+                utils::on_json(log_id, res, utils::wrap(StatusCode::FailedToParseRequest, "failed to parse the parameters"));
+                return;
+            }
+            service::Downloader::get().add_hash(log_id, param.hash);
+            utils::on_json(log_id, res, utils::wrap());
+            return;
+        }
+        else if (type == "torrent")
         {
             auto file = req.get_file();
             if (file == nullptr)
@@ -41,6 +58,8 @@ namespace handler
                 return;
             }
             auto profile_link = req.get_query_value("profile_link");
+
+            SPDLOG_ERROR("{}, {}", file== nullptr, profile_link);
             service::Downloader::get().add_torrent(log_id, profile_link, file->get_file_path());
             file->remove();
             utils::on_json(log_id, res, utils::wrap());
@@ -48,7 +67,7 @@ namespace handler
         }
         else if (type == "magnet")
         {
-            auto [param, _, success] = utils::parse_request<dto::VideoDownloadRequest>(req);
+            auto [param, _, success] = utils::parse_request<dto::VideoDownloadWithMagnetRequest>(req);
             if (!success)
             {
                 SPDLOG_ERROR("log_id={}, failed to parse the parameters", log_id);
@@ -69,6 +88,7 @@ namespace handler
 
     void video_progress(cinatra::request &req, cinatra::response &res)
     {
+        res.add_header("Access-Control-Allow-Origin", "*");
         auto log_id = utils::req_id(req);
         auto key = req.get_query_value("key");
         auto [progress, success] = service::Downloader::get().get_and_update(log_id, std::string{key});
@@ -84,6 +104,7 @@ namespace handler
 
     void video_remove(cinatra::request &req, cinatra::response &res)
     {
+        res.add_header("Access-Control-Allow-Origin", "*");
         auto [param, log_id, success] = utils::parse_request<dto::VideoRemoveRequest>(req);
         if (!success)
         {

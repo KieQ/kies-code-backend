@@ -82,9 +82,6 @@ namespace service
             SPDLOG_INFO("log_id={}, torrrent file {} has been added to downloading", log_id, hash);
             return true;
         }
-
-        std::error_code ec;
-
         apt.save_path = save_position;
 
 
@@ -116,9 +113,29 @@ namespace service
         return true;
     }
 
+    bool Downloader::add_hash(std::string_view log_id, std::string_view hash){
+        auto [video_info, exist] = db::t_video::fetch_first(log_id, {{"video_hash", hash}});
+        if(!exist){
+            SPDLOG_WARN("log_id={}, video {} doesn't exist", log_id, hash);
+            return false;
+        }
+
+        lt::add_torrent_params apt = lt::parse_magnet_uri(video_info.video_link);
+        if (downloading.find(std::string{hash}) != downloading.end())
+        {
+            SPDLOG_INFO("log_id={}, torrrent file {} has been added to downloading", log_id, hash);
+            return true;
+        }
+        apt.save_path = save_position;
+        auto h = session.add_torrent(apt);
+
+        downloading.insert({std::string{hash}, LastMeta{.last_time = utils::now_ms(), .last_size = h.status().total_payload_download, .handle = h}});
+
+        return true;
+    }
+
     std::tuple<Downloader::DownloadProgress, bool> Downloader::get_and_update(std::string_view log_id, const std::string &key)
     {
-        SPDLOG_INFO("log_id={}, {} in downloading? {}", log_id, key, downloading.find(key) == downloading.end());
         if (downloading.find(key) == downloading.end())
         {
             if (auto [video_info, exist] = db::t_video::fetch_first(log_id, {{"video_hash", key}}); exist)

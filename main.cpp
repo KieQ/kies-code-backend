@@ -7,7 +7,10 @@
 
 #include "db/t_user_info.hpp"
 
+#include "utils/cinatra.hpp"
+
 using namespace cinatra;
+
 
 void bind_api(http_server &server)
 {
@@ -24,13 +27,18 @@ void bind_api(http_server &server)
     server.set_http_handler<GET>("/video/progress", handler::video_progress);
     server.set_http_handler<POST>("/video/remove", handler::video_remove);
     server.set_http_handler<GET>("/video/list", handler::video_list);
+    // server.set_not_found_handler([](auto& req, auto& res){
+    //     res.add_header("Access-Control-Allow-Origin", "*");
+    //     res.add_header("Access-Control-Allow-Headers","X-Requested-With,Content-Type,Accept");
+    //     res.set_status_and_content(status_type::ok,"not found");
+    // });
 }   
 
 int main()
 {
     const char* port = std::getenv("BACKEND_PORT");
     if(port == nullptr){
-        port = "8080";
+        port = "8082";
     }
 
     SPDLOG_INFO("PORT={}", port);
