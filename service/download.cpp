@@ -137,8 +137,8 @@ namespace service
     std::tuple<Downloader::DownloadProgress, bool> Downloader::get_and_update(std::string_view log_id, const std::string &key)
     {
         SPDLOG_INFO("{}", std::filesystem::exists(std::string{service::Downloader::get().get_save_position()}));
-        SPDLOG_INFO("{}", std::filesystem::current_path());
-        SPDLOG_INFO("{}", std::filesystem::absolute("./media"));
+        SPDLOG_INFO("{}", std::filesystem::current_path().string());
+        SPDLOG_INFO("{}", std::filesystem::absolute("./media").string());
 
         if (downloading.find(key) == downloading.end())
         {
