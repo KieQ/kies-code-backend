@@ -174,9 +174,9 @@ namespace service
                 .downloaded_size = downloading[key].handle.status().total_wanted,
                 .progress = 1.0,
                 .file_name = downloading[key].handle.status().name};
-            downloading[key].handle.unset_flags(lt::torrent_flags::seed_mode);
-            downloading[key].handle.unset_flags(lt::torrent_flags::upload_mode);
-            downloading[key].handle.unset_flags(lt::torrent_flags::share_mode);
+            // downloading[key].handle.unset_flags(lt::torrent_flags::seed_mode);
+            // downloading[key].handle.unset_flags(lt::torrent_flags::upload_mode);
+            // downloading[key].handle.unset_flags(lt::torrent_flags::share_mode);
             SPDLOG_INFO("IS SEEDING");
             // session.remove_torrent(downloading[key].handle);
             // downloading.erase(key);
