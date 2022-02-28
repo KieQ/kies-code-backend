@@ -120,6 +120,13 @@ namespace service
             return false;
         }
 
+        auto result = db::t_video::update(log_id, {{"video_hash", hash}}, {{"state", 0}, {"completed_time", 0}, {"video_size", 0}});
+        if (result.affected_rows() == 0)
+        {
+            SPDLOG_INFO("log_id={}, failed to update {}", log_id, hash);
+            return false;
+        }
+
         lt::add_torrent_params apt = lt::parse_magnet_uri(video_info.video_link);
         if (downloading.find(std::string{hash}) != downloading.end())
         {
