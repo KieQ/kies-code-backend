@@ -15,6 +15,7 @@ namespace handler
 
     void video_list(cinatra::request &req, cinatra::response &res)
     {
+        SPDLOG_INFO("【KIE DEBUG】 #1");
         auto log_id = utils::req_id(req);
         auto videos = db::t_video::fetch(log_id, {});
         std::vector<dto::VideoListResponse> all_videos;
