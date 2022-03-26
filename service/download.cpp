@@ -206,6 +206,7 @@ namespace service
     void Downloader::remove(std::string_view log_id, const std::string &key)
     {
         if(downloading.find(key) != downloading.end()){
+            SPDLOG_INFO("log_id={}, remove file {}", log_id, key);
             auto delete_files = lt::session_handle::delete_files; //this is needed because libtorrent is compiled with C++14 or C++11 by conan and this project is in C++17. This might be a feature or bug of GCC which is related to unique symbol, so the linker will complain multi definition of delete_files. So I use this trick to walk around this bug. The bug might be fixed later even GCC 11 has this one as well, according to the internet, on which someone found this as well.
             session.remove_torrent(downloading[key].handle, delete_files);
             downloading.erase(key);
@@ -219,7 +220,8 @@ namespace service
             {
                 SPDLOG_INFO("log_id={}, failed to delete video {}", log_id, key);
             }
-            std::filesystem::remove(save_position+"/"+video.video_name);
+            auto result = std::filesystem::remove(save_position+"/"+video.video_name);
+            SPDLOG_INFO("log_id={}, remove result: {}", result);
         }
     }
 } // namespace service
