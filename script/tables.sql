@@ -42,7 +42,7 @@ CREATE TABLE t_video (
         state INT NOT NULL DEFAULT 0, -- state of this record. 0: unfinished, 1: finished
         added_time INT NOT NULL DEFAULT 0,
         completed_time INT NOT NULL DEFAULT 0,
-        video_link VARCHAR(400) DEFAULT '',
+        video_link TEXT DEFAULT '',
         profile_link VARCHAR(400) DEFAULT '',
         score INT NOT NULL DEFAULT 0,
         tags VARCHAR(500) DEFAULT ''
