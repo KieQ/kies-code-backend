@@ -220,8 +220,8 @@ namespace service
             {
                 SPDLOG_INFO("log_id={}, failed to delete video {}", log_id, key);
             }
-            auto result = std::filesystem::remove(save_position+"/"+video.video_name);
-            SPDLOG_INFO("log_id={}, remove result: {}", result);
+            auto res = std::filesystem::remove(save_position+"/"+video.video_name);
+            SPDLOG_INFO("log_id={}, remove result: {}", res);
         }
     }
 } // namespace service
