@@ -160,7 +160,7 @@ namespace service
             else
             {
                 SPDLOG_INFO("log_id={}, video {} does not exist", log_id, key);
-                return {{}, false};
+                return {Downloader::DownloadProgress{}, false};
             }
         }
 
@@ -170,7 +170,7 @@ namespace service
             if (result.affected_rows() == 0)
             {
                 SPDLOG_INFO("log_id={}, failed to update {}", log_id, key);
-                return {{}, false};
+                return {Downloader::DownloadProgress{}, false};
             }
             DownloadProgress progress{
                 .state = 5,

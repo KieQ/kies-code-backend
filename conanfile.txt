@@ -9,7 +9,8 @@ libtorrent/2.0.1
 openssl/1.1.1m
 
 [generators]
-cmake
+CMakeDeps
+CMakeToolchain
 
 [options]
 libpq:with_openssl=True

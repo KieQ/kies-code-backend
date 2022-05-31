@@ -15,7 +15,18 @@ if(${CMAKE_BUILD_TYPE} STREQUAL Debug)
     add_link_options(-fsanitize=address)
 endif()
 
+
+find_package(Boost REQUIRED)
+find_package(fmt REQUIRED)
+find_package(libpqxx REQUIRED)
+find_package(LibtorrentRasterbar REQUIRED)
+find_package(nlohmann_json REQUIRED)
+find_package(spdlog REQUIRED)
+
+
+
 if(NOT SKIP_TEST)
+    find_package(GTest REQUIRED)
     add_subdirectory(utils)
 endif()
 
@@ -33,11 +44,8 @@ add_all_source(utils)
 add_all_source(service)
 
 
-include(${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
-conan_basic_setup()
-
 add_executable(kies main.cpp ${db} ${handler} ${utils} ${service})
-target_link_libraries(kies PRIVATE lib ${CONAN_LIBS})
+target_link_libraries(kies PRIVATE lib boost::boost fmt::fmt libpqxx::pqxx nlohmann_json::nlohmann_json spdlog::spdlog LibtorrentRasterbar::torrent-rasterbar)
 
 install(TARGETS kies DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/..)
 
